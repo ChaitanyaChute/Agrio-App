@@ -1,50 +1,217 @@
-# Welcome to your Expo app 👋
+# Crop Disease Detection
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A smart mobile application for identifying crop diseases using AI/ML. Farmers can capture or upload leaf images to get instant disease identification, treatment recommendations, and preventive measures.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Disease Identification**: Capture or upload leaf images for instant disease detection
+- **Crop Management**: Browse and manage multiple crop types (Corn, Tomato, Potato, Grape)
+- **Disease Library**: Comprehensive disease information with symptoms and treatments
+- **Weather Integration**: Real-time weather data to support disease prediction
+- **Bookmarks**: Save favorite diseases for quick reference
+- **Theme Support**: Light and dark mode for better user experience
+- **Multi-Language**: English and Hindi language support
+- **Customizable Settings**: Adjust app appearance and notifications
+- **Cross-Platform**: Native Android support with iOS ready
+
+## Tech Stack
+
+| Layer                | Technology             |
+| -------------------- | ---------------------- |
+| **Framework**        | React Native with Expo |
+| **Language**         | TypeScript             |
+| **Styling**          | NativeWind             |
+| **State Management** | React Context API      |
+| **Storage**          | AsyncStorage           |
+| **HTTP Client**      | Axios                  |
+
+## Project Structure
+
+```
+crop-disease-detection/
+├── app/                                 # Application source code
+│   ├── _layout.tsx                     # Root layout with navigation
+│   ├── index.tsx                       # Home screen with weather
+│   ├── crops.tsx                       # Crop listing screen
+│   ├── crop-details.tsx                # Crop details screen
+│   ├── disease.tsx                     # Disease listing screen
+│   ├── disease-detail.tsx              # Disease details screen
+│   ├── identifier.tsx                  # Disease identifier (camera/gallery)
+│   ├── bookmarks.tsx                   # Bookmarked diseases
+│   ├── settings.tsx                    # App settings
+│   │
+│   ├── config/
+│   │   └── api.config.ts               # API configuration
+│   │
+│   ├── context/
+│   │   └── ThemeContext.tsx            # Theme provider (light/dark)
+│   │
+│   ├── locales/
+│   │   ├── LanguageContext.tsx         # Language provider
+│   │   └── translations.ts             # EN/HI translations
+│   │
+│   ├── services/
+│   │   └── api.service.ts              # API communication
+│   │
+│   └── utils/
+│       ├── fonts.ts                    # Font style helpers
+│       └── toastConfig.tsx             # Toast notifications
+│
+├── assets/                              # Images and media
+│   └── images/
+│       ├── bg/                         # Background images
+│       │   ├── bg_corn.png
+│       │   ├── bg_potato.png
+│       │   ├── bg_tomato.png
+│       │   └── bg_grape.png
+│       └── crops/                      # Crop icons
+│
+├── android/                             # Android native configuration
+│   ├── app/
+│   │   ├── src/main/
+│   │   │   ├── java/
+│   │   │   │   └── com/anonymous/cropdiseasedetection/
+│   │   │   │       ├── MainActivity.kt
+│   │   │   │       └── MainApplication.kt
+│   │   │   └── res/                    # Android resources
+│   │   ├── build.gradle
+│   │   └── proguard-rules.pro
+│   ├── build.gradle
+│   ├── gradle.properties
+│   ├── settings.gradle
+│   └── gradlew                          # Gradle wrapper
+│
+├── package.json                         # Project dependencies
+├── tsconfig.json                        # TypeScript configuration
+├── babel.config.js                      # Babel configuration
+├── metro.config.js                      # Metro bundler config
+├── eslint.config.js                     # ESLint configuration
+├── tailwind.config.js                   # Tailwind CSS config
+├── app.json                             # Expo configuration
+├── eas.json                             # EAS Build configuration
+├── global.css                           # Global styles
+├── .gitignore                           # Git ignore rules
+├── .env.example                         # Environment variables template
+└── README.md                            # This file
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Android Studio (for Android development)
+- Expo CLI: `npm install -g expo-cli`
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/yourusername/crop-disease-detection.git
+   cd crop-disease-detection
+   ```
+
+2. **Install dependencies**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. **Configure environment variables**
 
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys
+   ```
+
+4. **Start the development server**
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+### Running the App
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- **On Android Emulator**: Press `a` in the terminal
+- **On Physical Android Device**: Scan the QR code with Expo Go app
+- **Development Build**: `npx expo run:android`
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## 📋 Available Scripts
 
 ```bash
-npm run reset-project
+# Start development server
+npm start
+# or
+npx expo start
+
+# Run on Android
+npx expo run:android
+
+# Run on iOS
+npx expo run:ios
+
+# Build for Android
+eas build --platform android
+
+# Preview build
+eas build --platform android --profile preview
+
+# Lint code
+npm run lint
+
+# Type check
+npx tsc --noEmit
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🔧 Configuration
 
-## Learn more
+### Environment Variables
 
-To learn more about developing your project with Expo, look at the following resources:
+Create a `.env` file in the root directory:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```env
+API_BASE_URL=https://api.example.com
+OPENWEATHER_API_KEY=your_api_key_here
+```
 
-## Join the community
+### Supported Languages
 
-Join our community of developers creating universal apps.
+- English (en)
+- Hindi (hi)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Theme Support
+
+- Light mode (default)
+- Dark mode
+
+## Screens Overview
+
+| Screen             | Description                                               |
+| ------------------ | --------------------------------------------------------- |
+| **Home**           | Welcome screen with crop selection and weather widget     |
+| **Crops**          | Browse all available crops                                |
+| **Crop Details**   | View crop information and associated diseases             |
+| **Identifier**     | Capture or upload leaf images for disease detection       |
+| **Disease**        | Browse disease database                                   |
+| **Disease Detail** | View full disease information, treatments, and prevention |
+| **Bookmarks**      | View saved/bookmarked diseases                            |
+| **Settings**       | Manage theme, language, and app preferences               |
+
+## API Integration
+
+The app communicates with backend APIs for:
+
+- Crop and disease data
+- Disease identification (ML model integration pending)
+- Weather information (OpenWeatherMap)
+
+### API Endpoints
+
+```
+GET  /api/crops                 # Get all crops
+GET  /api/crops/:id            # Get crop details
+GET  /api/diseases             # Get all diseases
+GET  /api/diseases/:id         # Get disease details
+POST /api/identify             # Identify disease from image
+```
