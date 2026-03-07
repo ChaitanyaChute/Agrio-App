@@ -1,0 +1,138 @@
+export const translations = {
+  en: {
+    identityCropDiseases: "Identity Crop\nDiseases",
+    selectPlant: "Select Plant",
+    tomatoLeaf: "Tomato Leaf",
+    potatoLeaf: "Potato Leaf",
+    grapeLeaf: "Grape Leaf",
+    cornLeaf: "Corn Leaf",
+    identifier: "Identifier",
+
+    back: "back",
+    supportingFarmers: "Supporting Farmers in\nSafeguarding their Crop Health",
+    takePicture: "Take picture",
+    ofYourPlant: "of your plant",
+    import: "Import",
+    fromYourGallery: "from your gallery",
+
+    cancel: "Cancel",
+    preview: "Preview",
+    useThisPhoto: "Use This Photo",
+    retake: "Retake",
+
+    diseaseInfo: "Disease Info",
+    class: "Class",
+    earlyBlight: "Early Blight",
+    fungi: "Fungi",
+    earlyBlightDesc:
+      "Early blight, as the name implies, appears before the onset of late blight but does not spread throughout the foliage in UK potato crops as it does in warmer climates",
+
+    home: "Home",
+
+    cropHealthGuardian: "Smart Crop Protection",
+    version: "Version 1.0",
+
+    permissionRequired: "Permission Required",
+    cameraPermission: "Camera permission is required to take photos.",
+    galleryPermission: "Gallery permission is required to select photos.",
+    menu: "Menu",
+    menuComingSoon: "Menu functionality coming soon!",
+    language: "Language",
+    languageSelector: "Language selector",
+
+    about: "About",
+    howToUse: "How to Use",
+    diseaseLibrary: "Disease Library",
+    bookmarks: "Bookmarks",
+    settings: "Settings",
+    shareApp: "Share App",
+    feedback: "Feedback",
+
+    appearance: "Appearance",
+    darkMode: "Dark Mode",
+    cameraImage: "Camera & Image",
+    autoSave: "Auto-save Images",
+    imageQuality: "Image Quality",
+    notifications: "Notifications",
+    enableNotifications: "Enable Notifications",
+    storageData: "Storage & Data",
+    clearCache: "Clear Cache",
+    clearCacheConfirm: "Are you sure you want to clear all cached data?",
+    clear: "Clear",
+    success: "Success",
+    cacheCleared: "Cache cleared successfully",
+    privacy: "Privacy Policy",
+    terms: "Terms of Service",
+    share: "Share",
+  },
+  hi: {
+    identityCropDiseases: "फसल रोगों की\nपहचान करें",
+    selectPlant: "पौधा चुनें",
+    tomatoLeaf: "टमाटर की पत्ती",
+    potatoLeaf: "आलू की पत्ती",
+    grapeLeaf: "अंगूर की पत्ती",
+    cornLeaf: "मक्के की पत्ती",
+    identifier: "पहचानकर्ता",
+
+    back: "वापस",
+    supportingFarmers: "किसानों की फसल स्वास्थ्य की\nसुरक्षा में सहायता",
+    takePicture: "फोटो लें",
+    ofYourPlant: "अपने पौधे की",
+    import: "आयात करें",
+    fromYourGallery: "अपनी गैलरी से",
+
+    cancel: "रद्द करें",
+    preview: "पूर्वावलोकन",
+    useThisPhoto: "इस फोटो का उपयोग करें",
+    retake: "फिर से लें",
+
+    diseaseInfo: "रोग जानकारी",
+    class: "वर्ग",
+    earlyBlight: "अर्ली ब्लाइट",
+    fungi: "कवक",
+    earlyBlightDesc:
+      "अर्ली ब्लाइट, जैसा कि नाम से पता चलता है, लेट ब्लाइट की शुरुआत से पहले प्रकट होता है लेकिन यूके आलू की फसलों में पत्तियों में उतना नहीं फैलता जितना गर्म जलवायु में होता है",
+
+    home: "होम",
+
+    cropHealthGuardian: "स्मार्ट फसल सुरक्षा",
+    version: "संस्करण 1.0",
+
+    permissionRequired: "अनुमति आवश्यक",
+    cameraPermission: "फोटो लेने के लिए कैमरा अनुमति की आवश्यकता है।",
+    galleryPermission: "फोटो चुनने के लिए गैलरी अनुमति की आवश्यकता है।",
+    menu: "मेनू",
+    menuComingSoon: "मेनू कार्यक्षमता जल्द ही आ रही है!",
+    language: "भाषा",
+    languageSelector: "भाषा चयनकर्ता",
+
+    about: "के बारे में",
+    howToUse: "उपयोग कैसे करें",
+    diseaseLibrary: "रोग पुस्तकालय",
+    bookmarks: "बुकमार्क",
+    settings: "सेटिंग्स",
+    shareApp: "ऐप शेयर करें",
+    feedback: "प्रतिक्रिया",
+
+    appearance: "प्रस्तुति",
+    darkMode: "डार्क मोड",
+    cameraImage: "कैमरा और छवि",
+    autoSave: "छवियाँ स्वतः सहेजें",
+    imageQuality: "छवि गुणवत्ता",
+    notifications: "सूचनाएं",
+    enableNotifications: "सूचनाएं सक्षम करें",
+    storageData: "संग्रहण और डेटा",
+    clearCache: "कैश साफ़ करें",
+    clearCacheConfirm:
+      "क्या आप सुनिश्चित हैं कि आप सभी कैश डेटा साफ़ करना चाहते हैं?",
+    clear: "साफ़ करें",
+    success: "सफलता",
+    cacheCleared: "कैश सफलतापूर्वक साफ़ हो गया",
+    privacy: "गोपनीयता नीति",
+    terms: "सेवा की शर्तें",
+    share: "शेयर करें",
+  },
+};
+
+export type Language = keyof typeof translations;
+export type TranslationKeys = keyof typeof translations.en;
