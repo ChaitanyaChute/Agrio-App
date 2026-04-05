@@ -4,24 +4,24 @@ import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Modal,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useTheme } from "./context/ThemeContext";
 import { useLanguage } from "./locales/LanguageContext";
-import {
-    fetchWeatherForCurrentLocation,
-    isWeatherConfigurationError,
-    WeatherData,
-} from "./services/weather.service";
 import { preloadReferenceData } from "./services/api.service";
+import {
+  fetchWeatherForCurrentLocation,
+  isWeatherConfigurationError,
+  WeatherData,
+} from "./services/weather.service";
 import { getFontStyle } from "./utils/fonts";
 
 export default function Index() {

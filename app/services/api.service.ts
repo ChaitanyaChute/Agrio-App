@@ -1,10 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, { AxiosInstance } from "axios";
 import {
-    DATA_API_BASE,
-    DATA_API_CONFIG_ERROR,
-    ML_API_BASE,
-    ML_API_CONFIG_ERROR,
+  DATA_API_BASE,
+  DATA_API_CONFIG_ERROR,
+  ML_API_BASE,
+  ML_API_CONFIG_ERROR,
 } from "../config/api.config";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -49,7 +49,9 @@ const normalizeCachePart = (value: string) =>
 
 const makeDataCacheKey = (suffix: string) => `${DATA_CACHE_PREFIX}:${suffix}`;
 
-async function readDataCache<T>(cacheKey: string): Promise<DataCacheEnvelope<T> | null> {
+async function readDataCache<T>(
+  cacheKey: string,
+): Promise<DataCacheEnvelope<T> | null> {
   try {
     const raw = await AsyncStorage.getItem(cacheKey);
     if (!raw) return null;
@@ -82,7 +84,10 @@ async function writeDataCache<T>(cacheKey: string, data: T) {
   }
 }
 
-function revalidateInBackground<T>(cacheKey: string, fetcher: () => Promise<T>) {
+function revalidateInBackground<T>(
+  cacheKey: string,
+  fetcher: () => Promise<T>,
+) {
   void fetcher()
     .then((fresh) => writeDataCache(cacheKey, fresh))
     .catch(() => {
@@ -287,9 +292,7 @@ export async function getCrops(): Promise<Crop[]> {
 export async function getDiseases(
   cropName: string,
 ): Promise<CropDiseasesResponse> {
-  const cacheKey = makeDataCacheKey(
-    `diseases:${normalizeCachePart(cropName)}`,
-  );
+  const cacheKey = makeDataCacheKey(`diseases:${normalizeCachePart(cropName)}`);
 
   return cachedGet<CropDiseasesResponse>(
     cacheKey,
@@ -415,7 +418,9 @@ export async function preloadReferenceData() {
   try {
     const crops = await getCrops();
     const topCropNames = crops.slice(0, 6).map((crop) => crop.crop_name);
-    await Promise.allSettled(topCropNames.map((cropName) => getDiseases(cropName)));
+    await Promise.allSettled(
+      topCropNames.map((cropName) => getDiseases(cropName)),
+    );
   } catch {
     // Best-effort preload only.
   }
