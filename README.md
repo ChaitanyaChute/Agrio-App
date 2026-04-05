@@ -171,9 +171,87 @@ npx tsc --noEmit
 Create a `.env` file in the root directory:
 
 ```env
-API_BASE_URL=https://api.example.com
-OPENWEATHER_API_KEY=your_api_key_here
+EXPO_PUBLIC_DATA_API_BASE=http://127.0.0.1:5000
+EXPO_PUBLIC_ML_API_BASE=http://127.0.0.1:8000
+EXPO_PUBLIC_OPENWEATHER_API_KEY=your_api_key_here
 ```
+
+Start from `.env.example` so all required variables are present.
+The repository is configured to ignore `.env` and `.env.*` (while keeping `.env.example` tracked).
+
+For local model/backend integration:
+
+- `EXPO_PUBLIC_DATA_API_BASE` is used for crop/disease data endpoints on Node.js (`/api/...`)
+- `EXPO_PUBLIC_ML_API_BASE` is used for image upload to FastAPI (`POST /predict`)
+- `EXPO_PUBLIC_OPENWEATHER_API_KEY` is used for current weather data (OpenWeatherMap)
+
+For Android emulator, use:
+
+```env
+EXPO_PUBLIC_DATA_API_BASE=http://10.0.2.2:5000
+EXPO_PUBLIC_ML_API_BASE=http://10.0.2.2:8000
+```
+
+For release APK on a real device, do not use localhost or 10.0.2.2. Use a reachable LAN/public backend URL:
+
+```env
+EXPO_PUBLIC_DATA_API_BASE=https://your-data-backend.example.com
+EXPO_PUBLIC_ML_API_BASE=https://your-ml-backend.example.com
+```
+
+### EAS Build Environment (Required for APK)
+
+Because `.env` is gitignored, EAS cloud builds will not automatically include your local values.
+
+Set these variables before building:
+
+```bash
+eas env:create --name EXPO_PUBLIC_DATA_API_BASE --value "https://your-data-backend.example.com" --environment preview
+eas env:create --name EXPO_PUBLIC_ML_API_BASE --value "https://your-ml-backend.example.com" --environment preview
+eas env:create --name EXPO_PUBLIC_OPENWEATHER_API_KEY --value "your_api_key_here" --environment preview
+
+eas env:create --name EXPO_PUBLIC_DATA_API_BASE --value "https://your-data-backend.example.com" --environment production
+eas env:create --name EXPO_PUBLIC_ML_API_BASE --value "https://your-ml-backend.example.com" --environment production
+eas env:create --name EXPO_PUBLIC_OPENWEATHER_API_KEY --value "your_api_key_here" --environment production
+```
+
+Then rebuild:
+
+```bash
+npx eas build --platform android --profile preview
+```
+
+### GitHub Push Readiness Checklist
+
+1. Keep real values only in `.env` (never in source files).
+2. Keep placeholders only in `.env.example`.
+3. Verify env files are not tracked:
+
+```bash
+git ls-files | grep -E "^\\.env($|\\.)"
+```
+
+Expected result: only `.env.example`.
+
+4. If any real env file is tracked, untrack it before pushing:
+
+```bash
+git rm --cached --ignore-unmatch .env .env.development .env.production .env.staging
+```
+
+5. Run sanity checks before push:
+
+```bash
+npm run lint
+npx tsc --noEmit
+```
+
+### APK Troubleshooting
+
+- If release app shows setup/configuration error, backend URL variables are missing or pointing to localhost.
+- If weather fails in release, verify `EXPO_PUBLIC_OPENWEATHER_API_KEY` is set in EAS env for the selected profile.
+- Verify backend is reachable from phone browser (same network if using LAN IP).
+- Confirm `POST /predict` works on your ML backend and data endpoints are available on your data backend.
 
 ### Supported Languages
 
