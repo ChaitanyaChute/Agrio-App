@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Image,
     ScrollView,
     Text,
@@ -12,6 +13,12 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTheme } from "./context/ThemeContext";
 import { useLanguage } from "./locales/LanguageContext";
+import {
+    Crop,
+    getCrops,
+    isApiConfigurationError,
+} from "./services/api.service";
+import { getCropImage } from "./utils/cropImages";
 import { getFontStyle } from "./utils/fonts";
 
 export default function Crops() {
@@ -20,42 +27,31 @@ export default function Crops() {
   const { language } = useLanguage();
   const { colors } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
+  const [allCrops, setAllCrops] = useState<Crop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  const [fetchErrorMessage, setFetchErrorMessage] = useState<string | null>(
+    null,
+  );
+  const [retryKey, setRetryKey] = useState(0);
 
-  const allCrops = [
-    {
-      id: 1,
-      name: language === "en" ? "Chilli" : "मिर्च",
-      image: require("../assets/images/crops/chilli.png"),
-    },
-    {
-      id: 2,
-      name: language === "en" ? "Corn" : "मक्का",
-      image: require("../assets/images/crops/corn.png"),
-    },
-    {
-      id: 3,
-      name: language === "en" ? "Cotton" : "कपास",
-      image: require("../assets/images/crops/cotton.png"),
-    },
-    {
-      id: 4,
-      name: language === "en" ? "Potato" : "आलू",
-      image: require("../assets/images/crops/potato.png"),
-    },
-    {
-      id: 5,
-      name: language === "en" ? "Soyabean" : "सोयाबीन",
-      image: require("../assets/images/crops/soyabean.png"),
-    },
-    {
-      id: 6,
-      name: language === "en" ? "Tomato" : "टमाटर",
-      image: require("../assets/images/crops/tomato.png"),
-    },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    setFetchError(false);
+    setFetchErrorMessage(null);
+    getCrops()
+      .then(setAllCrops)
+      .catch((error) => {
+        setFetchError(true);
+        if (isApiConfigurationError(error)) {
+          setFetchErrorMessage(error.message);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [retryKey]);
 
   const crops = allCrops.filter((crop) =>
-    crop.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    crop.crop_name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -118,47 +114,106 @@ export default function Crops() {
         className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
       >
-        <View className="flex-row flex-wrap gap-4">
-          {crops.map((crop) => (
+        {loading ? (
+          <View className="flex-1 items-center justify-center py-16">
+            <ActivityIndicator size="large" color="#84cc16" />
+            <Text
+              style={{
+                color: colors.textSecondary,
+                ...getFontStyle(language, "medium"),
+              }}
+              className="text-sm mt-3"
+            >
+              {language === "en"
+                ? "Loading crops..."
+                : "फसलें लोड हो रही हैं..."}
+            </Text>
+          </View>
+        ) : fetchError ? (
+          <View className="flex-1 items-center justify-center py-16 px-6">
+            <Ionicons name="cloud-offline-outline" size={48} color="#ef4444" />
+            <Text
+              style={{
+                color: "#ef4444",
+                ...getFontStyle(language, "semibold"),
+              }}
+              className="text-base text-center mt-3 mb-1"
+            >
+              {language === "en"
+                ? "Failed to load crops"
+                : "फसलें लोड नहीं हो सकीं"}
+            </Text>
+            <Text
+              style={{
+                color: colors.textSecondary,
+                ...getFontStyle(language, "regular"),
+              }}
+              className="text-sm text-center mb-5"
+            >
+              {fetchErrorMessage ??
+                (language === "en"
+                  ? "Check your connection and try again."
+                  : "कनेक्शन जांचें और पुनः प्रयास करें।")}
+            </Text>
             <TouchableOpacity
-              key={crop.id}
-              style={{ backgroundColor: colors.card, width: "47%" }}
-              className="rounded-3xl p-4 shadow-xl"
-              onPress={() =>
-                router.push(`/crop-details?cropName=${crop.name.split(" ")[0]}`)
-              }
+              style={{ backgroundColor: "#84cc16" }}
+              className="px-8 py-3 rounded-full"
+              onPress={() => setRetryKey((k) => k + 1)}
               activeOpacity={0.7}
             >
-              <View className="items-center mb-3">
-                <View className="w-28 h-28 rounded-2xl overflow-hidden bg-white items-center justify-center">
-                  <Image
-                    source={crop.image}
-                    className="w-24 h-24"
-                    resizeMode="contain"
-                  />
-                </View>
-              </View>
               <Text
-                style={{
-                  color: colors.text,
-                  ...getFontStyle(language, "bold"),
-                }}
-                className="text-lg mb-1 text-center"
+                style={{ color: "#fff", ...getFontStyle(language, "semibold") }}
+                className="text-sm"
               >
-                {crop.name}
-              </Text>
-              <Text
-                style={{
-                  color: colors.textSecondary,
-                  ...getFontStyle(language, "regular"),
-                }}
-                className="text-xs text-center"
-              >
-                {language === "en" ? "View diseases" : "रोग देखें"}
+                {language === "en" ? "Try Again" : "पुनः प्रयास करें"}
               </Text>
             </TouchableOpacity>
-          ))}
-        </View>
+          </View>
+        ) : (
+          <View className="flex-row flex-wrap gap-4">
+            {crops.map((crop) => (
+              <TouchableOpacity
+                key={crop.crop_id}
+                style={{ backgroundColor: colors.card, width: "47%" }}
+                className="rounded-3xl p-4 shadow-xl"
+                onPress={() =>
+                  router.push(
+                    `/crop-details?cropName=${encodeURIComponent(crop.crop_name)}`,
+                  )
+                }
+                activeOpacity={0.7}
+              >
+                <View className="items-center mb-3">
+                  <View className="w-28 h-28 rounded-2xl overflow-hidden bg-white items-center justify-center">
+                    <Image
+                      source={getCropImage(crop.crop_name)}
+                      className="w-24 h-24"
+                      resizeMode="contain"
+                    />
+                  </View>
+                </View>
+                <Text
+                  style={{
+                    color: colors.text,
+                    ...getFontStyle(language, "bold"),
+                  }}
+                  className="text-lg mb-1 text-center"
+                >
+                  {crop.crop_name}
+                </Text>
+                <Text
+                  style={{
+                    color: colors.textSecondary,
+                    ...getFontStyle(language, "regular"),
+                  }}
+                  className="text-xs text-center"
+                >
+                  {language === "en" ? "View diseases" : "रोग देखें"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* Tips Section */}
         <View className="mt-6">

@@ -9,6 +9,10 @@ import { useTheme } from "./context/ThemeContext";
 import { useLanguage } from "./locales/LanguageContext";
 import { getFontStyle } from "./utils/fonts";
 
+function formatDiseaseName(name: string) {
+  return name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export default function Bookmarks() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -168,13 +172,8 @@ export default function Bookmarks() {
                   router.push({
                     pathname: "/disease-detail",
                     params: {
-                      diseaseName: bookmark.diseaseName,
-                      diseaseNameLang: bookmark.diseaseNameLang,
-                      diseaseClass: bookmark.diseaseClass,
-                      diseaseClassLang: bookmark.diseaseClassLang,
-                      description: bookmark.description,
-                      descriptionLang: bookmark.descriptionLang,
                       cropName: bookmark.cropName,
+                      diseaseName: bookmark.diseaseName,
                     },
                   });
                 }}
@@ -189,9 +188,7 @@ export default function Bookmarks() {
                       }}
                       className="text-lg mb-2"
                     >
-                      {language === "en"
-                        ? bookmark.diseaseName
-                        : bookmark.diseaseNameLang}
+                      {formatDiseaseName(bookmark.diseaseName)}
                     </Text>
                     <View className="flex-row items-center">
                       <View className="bg-lime-500 px-3 py-1 rounded-full mr-2">
@@ -199,9 +196,7 @@ export default function Bookmarks() {
                           style={{ ...getFontStyle(language, "medium") }}
                           className="text-white text-xs"
                         >
-                          {language === "en"
-                            ? bookmark.diseaseClass
-                            : bookmark.diseaseClassLang}
+                          {bookmark.cropName}
                         </Text>
                       </View>
                       <Text

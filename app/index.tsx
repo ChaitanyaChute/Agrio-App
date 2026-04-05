@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import * as Location from "expo-location";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -17,18 +16,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useTheme } from "./context/ThemeContext";
 import { useLanguage } from "./locales/LanguageContext";
+import {
+    fetchWeatherForCurrentLocation,
+    isWeatherConfigurationError,
+    WeatherData,
+} from "./services/weather.service";
+import { preloadReferenceData } from "./services/api.service";
 import { getFontStyle } from "./utils/fonts";
-
-interface WeatherData {
-  temp: number;
-  feelsLike: number;
-  condition: string;
-  description: string;
-  humidity: number;
-  windSpeed: number;
-  icon: string;
-  location: string;
-}
 
 export default function Index() {
   const insets = useSafeAreaInsets();
@@ -44,6 +38,14 @@ export default function Index() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [locationPermission, setLocationPermission] = useState(false);
+  const [weatherErrorMessage, setWeatherErrorMessage] = useState<string | null>(
+    null,
+  );
+  const [weatherLastUpdated, setWeatherLastUpdated] = useState<number | null>(
+    null,
+  );
+  const [weatherFromCache, setWeatherFromCache] = useState(false);
+  const [weatherIsStale, setWeatherIsStale] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -55,63 +57,117 @@ export default function Index() {
     requestLocationPermission();
   }, []);
 
+  useEffect(() => {
+    preloadReferenceData().catch(() => {
+      // Best-effort preload only.
+    });
+  }, []);
+
+  useEffect(() => {
+    if (locationPermission && weatherData) {
+      fetchWeatherData(true, false);
+    }
+  }, [language]);
+
   const requestLocationPermission = async () => {
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === "granted") {
+      const existingPermission = await Location.getForegroundPermissionsAsync();
+
+      if (existingPermission.status === "granted") {
         setLocationPermission(true);
-        fetchWeatherData();
-      } else {
+        setWeatherErrorMessage(null);
+        fetchWeatherData(false, false);
+        return;
+      }
+
+      const requestedPermission =
+        await Location.requestForegroundPermissionsAsync();
+
+      if (requestedPermission.status === "granted") {
+        setLocationPermission(true);
+        setWeatherErrorMessage(null);
+        fetchWeatherData(false, false);
+        return;
+      }
+
+      setLocationPermission(false);
+      setWeatherErrorMessage(
+        language === "en"
+          ? "Location permission is required to fetch weather data."
+          : "मौसम डेटा प्राप्त करने के लिए स्थान अनुमति आवश्यक है।",
+      );
+
+      Toast.show({
+        type: "info",
+        text1: language === "en" ? "Permission Denied" : "अनुमति अस्वीकृत",
+        text2:
+          language === "en"
+            ? "Location permission is required to fetch weather data."
+            : "मौसम डेटा प्राप्त करने के लिए स्थान अनुमति आवश्यक है।",
+        position: "bottom",
+        visibilityTime: 3000,
+      });
+    } catch (error) {
+      console.error("Error requesting location permission:", error);
+      setWeatherErrorMessage(
+        language === "en"
+          ? "Unable to check location permission."
+          : "स्थान अनुमति जांचने में समस्या हुई।",
+      );
+    }
+  };
+
+  const fetchWeatherData = async (forceRefresh = false, showToast = true) => {
+    setWeatherLoading(true);
+    setWeatherErrorMessage(null);
+
+    try {
+      const result = await fetchWeatherForCurrentLocation(
+        language,
+        forceRefresh,
+      );
+      setWeatherData(result.data);
+      setWeatherLastUpdated(result.fetchedAt);
+      setWeatherFromCache(result.fromCache);
+      setWeatherIsStale(result.stale);
+
+      if (result.stale) {
         Toast.show({
           type: "info",
-          text1: language === "en" ? "Permission Denied" : "अनुमति अस्वीकृत",
+          text1: language === "en" ? "Offline Weather" : "ऑफलाइन मौसम",
           text2:
             language === "en"
-              ? "Location permission is required to fetch weather data."
-              : "मौसम डेटा प्राप्त करने के लिए स्थान अनुमति आवश्यक है।",
+              ? "Showing last saved weather data."
+              : "अंतिम सहेजा गया मौसम डेटा दिखाया जा रहा है।",
+          position: "bottom",
+          visibilityTime: 2500,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+
+      const fallbackMessage =
+        language === "en"
+          ? "Failed to fetch weather data. Please try again."
+          : "मौसम डेटा प्राप्त करने में विफल। कृपया पुन: प्रयास करें।";
+
+      const message = isWeatherConfigurationError(error)
+        ? error.message
+        : error instanceof Error
+          ? error.message
+          : fallbackMessage;
+
+      setWeatherErrorMessage(message);
+
+      if (showToast) {
+        Toast.show({
+          type: "error",
+          text1: language === "en" ? "Error" : "त्रुटि",
+          text2: message,
           position: "bottom",
           visibilityTime: 3000,
         });
       }
-    } catch (error) {
-      console.error("Error requesting location permission:", error);
-    }
-  };
-
-  const fetchWeatherData = async () => {
-    setWeatherLoading(true);
-    try {
-      const location = await Location.getCurrentPositionAsync({});
-      const { latitude, longitude } = location.coords;
-
-      const API_KEY = "bd5e378503939ddaee76f12ad7a97608";
-      const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${API_KEY}`;
-
-      const response = await axios.get(url);
-      const data = response.data;
-
-      setWeatherData({
-        temp: Math.round(data.main.temp),
-        feelsLike: Math.round(data.main.feels_like),
-        condition: data.weather[0].main,
-        description: data.weather[0].description,
-        humidity: data.main.humidity,
-        windSpeed: Math.round(data.wind.speed * 3.6),
-        icon: data.weather[0].icon,
-        location: data.name,
-      });
-    } catch (error) {
-      console.error("Error fetching weather data:", error);
-      Toast.show({
-        type: "error",
-        text1: language === "en" ? "Error" : "त्रुटि",
-        text2:
-          language === "en"
-            ? "Failed to fetch weather data. Please try again."
-            : "मौसम डेटा प्राप्त करने में विफल। कृपया पुन: प्रयास करें।",
-        position: "bottom",
-        visibilityTime: 3000,
-      });
     } finally {
       setWeatherLoading(false);
     }
@@ -136,6 +192,18 @@ export default function Index() {
       Tornado: "thunderstorm",
     };
     return iconMap[condition] || "partly-sunny";
+  };
+
+  const formatWeatherUpdatedTime = (timestamp: number | null) => {
+    if (!timestamp) return "";
+
+    return new Date(timestamp).toLocaleTimeString(
+      language === "en" ? "en-US" : "hi-IN",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      },
+    );
   };
 
   const loadBookmarks = async () => {
@@ -403,7 +471,7 @@ export default function Index() {
                 }}
                 className="text-xs"
               >
-                {language === "en" ? "6 Crops" : "6 फसलें"}
+                {language === "en" ? "View All" : "सभी देखें"}
               </Text>
             </TouchableOpacity>
 
@@ -692,7 +760,7 @@ export default function Index() {
                     </View>
                     <TouchableOpacity
                       className="mt-4 items-center"
-                      onPress={fetchWeatherData}
+                      onPress={() => fetchWeatherData(true)}
                       activeOpacity={0.7}
                     >
                       <View className="flex-row items-center">
@@ -708,6 +776,38 @@ export default function Index() {
                         </Text>
                       </View>
                     </TouchableOpacity>
+
+                    <View className="mt-3 items-center">
+                      {weatherFromCache && (
+                        <Text
+                          style={{
+                            color: colors.textSecondary,
+                            ...getFontStyle(language, "regular"),
+                          }}
+                          className="text-xs"
+                        >
+                          {weatherIsStale
+                            ? language === "en"
+                              ? "Offline mode: showing saved weather"
+                              : "ऑफलाइन मोड: सहेजा गया मौसम दिख रहा है"
+                            : language === "en"
+                              ? "Loaded from cache"
+                              : "कैश से लोड किया गया"}
+                        </Text>
+                      )}
+                      {weatherLastUpdated && (
+                        <Text
+                          style={{
+                            color: colors.textSecondary,
+                            ...getFontStyle(language, "regular"),
+                          }}
+                          className="text-xs mt-1"
+                        >
+                          {language === "en" ? "Updated" : "अपडेट"}:{" "}
+                          {formatWeatherUpdatedTime(weatherLastUpdated)}
+                        </Text>
+                      )}
+                    </View>
                   </View>
                 ) : (
                   <View className="items-center py-6">
@@ -723,14 +823,15 @@ export default function Index() {
                       }}
                       className="text-sm mt-3 text-center"
                     >
-                      {language === "en"
-                        ? "Unable to fetch weather data\nPlease try again"
-                        : "मौसम डेटा प्राप्त करने में असमर्थ\nकृपया पुन: प्रयास करें"}
+                      {weatherErrorMessage ??
+                        (language === "en"
+                          ? "Unable to fetch weather data\nPlease try again"
+                          : "मौसम डेटा प्राप्त करने में असमर्थ\nकृपया पुन: प्रयास करें")}
                     </Text>
                     <TouchableOpacity
                       style={{ backgroundColor: "#84cc16" }}
                       className="px-6 py-2 rounded-full mt-3"
-                      onPress={fetchWeatherData}
+                      onPress={() => fetchWeatherData(true)}
                       activeOpacity={0.7}
                     >
                       <Text
