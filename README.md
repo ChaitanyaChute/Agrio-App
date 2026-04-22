@@ -1,4 +1,7 @@
-# Agrio – Crop Disease Detection
+# Agrio – Crop Disease Detection 
+
+[![Download](https://img.shields.io/badge/Download-AGRIO_App-green?style=for-the-badge&logo=android)](https://github.com/ChaitanyaChute/Agrio-App/releases/download/v1.0.0/AGRIO.apk)
+
 
 A smart mobile application for identifying crop diseases using AI/ML. Farmers can capture or upload leaf images to get instant disease identification, treatment recommendations, and preventive measures.
 
@@ -13,7 +16,6 @@ A smart mobile application for identifying crop diseases using AI/ML. Farmers ca
 </p>
 
 ---
-
 ## Features
 
 - **Disease Identification**: Capture or upload leaf images for instant AI-powered disease detection
